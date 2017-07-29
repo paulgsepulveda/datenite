@@ -19,10 +19,18 @@ The app or the site (use VueJS) hit the API with a request:
 Then the API spits out a standard JSON response like so:
 
 ```
-{
-    source: Eventful or Yelp
-    time_range: xxxx,
+{    
+    date_type: xxxx,
+    details: {
+        {
+            detail_type: xxxx,
+            address: xxxx,
+            name: xxxx,
+            source: Eventful or Yelp or Both,
+            link: xxxx,
 
+        }
+    }
 }
 ```
 

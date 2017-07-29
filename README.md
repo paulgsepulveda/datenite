@@ -6,11 +6,25 @@ This is the NodeJS API server for the DateNite app.
 
 The app or the site (use VueJS) hit the API with a request:
 
-`Stuff`
+``` 
+{
+    latitude: xxxx,
+    longitude: xxxx,
+    date: isodate,
+    zip: xxxxx,
+    date_type: xxxx
+}
+```
 
 Then the API spits out a standard JSON response like so:
 
-`Stuff`
+```
+{
+    source: Eventful or Yelp
+    time_range: xxxx,
+
+}
+```
 
 The app/page receives the response and displays accordingly.
 
@@ -18,9 +32,18 @@ The app/page receives the response and displays accordingly.
 
 * Landing Page - what it does, plans for the future
 * About Page - disclosures, contact form
+* Date Page - duh
 
-
-# Tools
+## Tools
 
 https://github.com/danieljin/yelpv3
+https://www.yelp.com/developers/documentation/v3/business_search
+http://api.eventful.com/docs
+
+## Query Parameters
+
+Eventful category - movies_film
+
+
+
 

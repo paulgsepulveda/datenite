@@ -28,7 +28,7 @@ Then the API spits out a standard JSON response like so:
             name: xxxx,
             source: Eventful or Yelp or Both,
             site_link: xxxx,
-            
+            image_link: 
         }
     }
 }

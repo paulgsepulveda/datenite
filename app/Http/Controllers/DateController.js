@@ -2,6 +2,7 @@
 
 const rwc = require('random-weighted-choice')
 const requestClient = require('request');
+const Env = use('Env')
 
 class DateController {
 
@@ -13,6 +14,10 @@ class DateController {
             1, // Movie
             2  // Dinner & Movie
         ];
+        this.bearerToken = this.checkBearerToken();
+        if(this.bearerToken == false) {
+            this.bearerToken = fetchBearerToken();
+        }
     }
 
     * index (request, response) {
@@ -61,8 +66,28 @@ class DateController {
     }
 
     planDate(date_type, location, datetime) {
+        
+        var details = {};
+
         if(date_type == 'surprise') {
             date_type = this.surpriseMe();
+        }
+
+        switch (date_type) {
+            case 0:
+                console.log('Planning dinner')
+                details = details.push(this.selectRestaurant(location))
+                break
+            case 1:
+                console.log('Planning movie')
+                details = details.push(this.selectMovie())
+                break
+            case 2:
+                console.log('Planning d&m')
+
+                break
+            default:
+                console.log("uh oh, no plan")
         }
 
     }
@@ -72,8 +97,7 @@ class DateController {
         var data = {
             radius: 25000,
             categories: 'restaurants',
-            limit: 1,
-
+            limit: 1
         };
 
         if(location.type == 'zip') {
@@ -90,7 +114,7 @@ class DateController {
             console.log('error:', error); // Print the error if one occurred
             console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
             console.log('body:', body); 
-        });
+        }).auth(null, null, true, this.bearerToken);
     }
 
     setTimeRange(datetime) {
@@ -99,7 +123,7 @@ class DateController {
 
     selectMovie(location, datetime) {
         var data = {
-
+            app_key: Env.get('NODE_ENV')
         }
 
         let urlParameters = Object.keys(data).map((i) => i+'='+data[i]).join('&');
@@ -110,6 +134,35 @@ class DateController {
             console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
             console.log('body:', body); 
         });
+    }
+
+    checkBearerToken() {
+        
+        const expiration = Env.get('YELP_EXPIRATION')
+        const currentTime = Date.now()
+
+        if(currentTime - expiration < 15552000000) {
+            return true
+        } else {
+            return false
+        }
+
+    }
+
+    fetchBearerToken() {
+
+        const currentDate = Date.now()
+        request(url, function (error, response, body) {
+            console.log('error:', error); // Print the error if one occurred
+            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+            console.log('body:', body); 
+
+            Env.set('YELP_EXPIRATION', currentDate)
+            Env.set()
+            return true
+        });
+
+        
     }
 }
 

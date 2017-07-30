@@ -10,10 +10,15 @@ class DateController {
         this.yelpBusinessBase = 'https://api.yelp.com/v3/businesses/search?';
         this.eventfulSearchBase = 'http://api.eventful.com/json/events/search?';
         this.dateOptions = [
-            0, // Dinner
-            1, // Movie
-            2  // Dinner & Movie
+            'resturants', 
+            'active', 
+            'arts',
+            'nightlife'
         ];
+        this.commonParameters = {
+            radius: 25000,
+            limit: 1
+        }
         this.bearerToken = this.checkBearerToken();
         if(this.bearerToken == false) {
             this.bearerToken = fetchBearerToken();
@@ -26,8 +31,7 @@ class DateController {
 
     * api (request, response) {
 
-        const data = request.all()
-        var date;
+        const data = request.all();
 
         // Validate location
         const location = validateLocation(data)
@@ -36,8 +40,13 @@ class DateController {
         }
         
         //Get date info
-        date = planDate(data.date_type, location, data.date)
+        details = planDate(data.date_type, location, data.date)
 
+        var date = {
+            date_type: data.date_type,
+            location: location,
+            details: details
+        }
         response.json(date) 
     }
 
@@ -73,67 +82,51 @@ class DateController {
             date_type = this.surpriseMe();
         }
 
-        switch (date_type) {
-            case 0:
-                console.log('Planning dinner')
-                details = details.push(this.selectRestaurant(location))
-                break
-            case 1:
-                console.log('Planning movie')
-                details = details.push(this.selectMovie())
-                break
-            case 2:
-                console.log('Planning d&m')
+        details.push(this.selectDateLocation(location, date_type))
 
-                break
-            default:
-                console.log("uh oh, no plan")
-        }
-
+        return details
     }
 
-    selectRestaurant(location) {
-        
-        var data = {
-            radius: 25000,
-            categories: 'restaurants',
-            limit: 1
-        };
+    buildUrl(data) {
+        let urlParameters = Object.keys(data).map((i) => i+'='+data[i]).join('&');
+        const url = this.yelpBusinessBase + urlParameters
+        return url
+    }
 
+    setLocationParameters(data, location) {
         if(location.type == 'zip') {
             data.location = location.zip 
         } else {
             data.latitude = location.latitude
             data.longitude = location.longitude
         }
+    }
 
-        let urlParameters = Object.keys(data).map((i) => i+'='+data[i]).join('&');
-        const url = this.yelpBusinessBase + urlParameters
-
+    sendYelpRequest(url) {
         request(url, function (error, response, body) {
             console.log('error:', error); // Print the error if one occurred
             console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            console.log('body:', body); 
+            console.log('body:', body);  
+
+            return parseYelpRequest(body)
+            
         }).auth(null, null, true, this.bearerToken);
     }
 
-    setTimeRange(datetime) {
+    parseYelpRequest(body) {
+        var data = body.businesses[0];
 
     }
 
-    selectMovie(location, datetime) {
-        var data = {
-            app_key: Env.get('NODE_ENV')
-        }
+    selectDateLocation(location) {
+        
+        var data = this.commonParameters;
+        data.categories = 'restaurants';
+        setLocationParameters(data, location);
+        const url = buildUrl(data)
 
-        let urlParameters = Object.keys(data).map((i) => i+'='+data[i]).join('&');
-        const url = this.eventfulSearchBase + urlParameters
-
-        request(url, function (error, response, body) {
-            console.log('error:', error); // Print the error if one occurred
-            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            console.log('body:', body); 
-        });
+        var details = sendYelpRequest(url);
+        return details;
     }
 
     checkBearerToken() {
@@ -142,7 +135,7 @@ class DateController {
         const currentTime = Date.now()
 
         if(currentTime - expiration < 15552000000) {
-            return true
+            return Env.get('YELP_TOKEN')
         } else {
             return false
         }
@@ -152,17 +145,26 @@ class DateController {
     fetchBearerToken() {
 
         const currentDate = Date.now()
-        request(url, function (error, response, body) {
+        const url = 'https://api.yelp.com/oauth2/token'
+        request(
+            {
+                uri: url,
+                method: "POST",
+                body:
+                {
+                    grant_type: "client_credentials",
+                    client_id: Env.get('YELP_ID'),
+                    client_secret: Env.get('YELP_SECRET')
+                }
+            }, function (error, response, body) {
             console.log('error:', error); // Print the error if one occurred
             console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
             console.log('body:', body); 
 
             Env.set('YELP_EXPIRATION', currentDate)
-            Env.set()
+            Env.set('YELP_TOKEN', body.access_token)
             return true
         });
-
-        
     }
 }
 

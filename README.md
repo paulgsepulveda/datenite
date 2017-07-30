@@ -54,5 +54,10 @@ https://github.com/xkjyeah/vue-google-maps
 
 I need to find something for movies. Maybe I can partner with Fandango if I can make this thing big? For now, maybe I can just hit an api that produces a list of movies in theaters locally?
 
+## Callback hell
+
+Defeated for now, but must develop a way to go beyond Yelp. Maybe set a switch inside the 
+
+
 
 

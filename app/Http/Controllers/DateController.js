@@ -32,22 +32,36 @@ class DateController {
     * api (request, response) {
 
         const data = request.all();
+        var date = {};
 
         // Validate location
         const location = validateLocation(data)
         if (!location) {
             response.json({message: "Invalid location data"})
         }
-        
-        //Get date info
-        details = planDate(data.date_type, location, data.date)
 
-        var date = {
-            date_type: data.date_type,
-            location: location,
-            details: details
+        // Account for surprise request
+        if(date_type == 'surprise') {
+            date_type = this.surpriseMe();
         }
-        response.json(date) 
+
+        // Create date object, fill general data and create 
+        var date = {
+            "date_type": data.date_type,
+            "location": location,
+            "details": details
+        }
+
+        var params = this.commonParameters;
+        params.categories = 'restaurants';
+        setLocationParameters(params, location);
+        const url = buildUrl(params);
+
+        sendYelpRequest(url)
+            .then(function(result){
+                date.details = result
+                response.json(date) 
+            });
     }
 
     surpriseMe() {
@@ -74,18 +88,7 @@ class DateController {
         }
     }
 
-    planDate(date_type, location, datetime) {
-        
-        var details = {};
-
-        if(date_type == 'surprise') {
-            date_type = this.surpriseMe();
-        }
-
-        details.push(this.selectDateLocation(location, date_type))
-
-        return details
-    }
+ 
 
     buildUrl(data) {
         let urlParameters = Object.keys(data).map((i) => i+'='+data[i]).join('&');
@@ -103,30 +106,23 @@ class DateController {
     }
 
     sendYelpRequest(url) {
-        request(url, function (error, response, body) {
-            console.log('error:', error); // Print the error if one occurred
-            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            console.log('body:', body);  
 
-            return parseYelpRequest(body)
-            
-        }).auth(null, null, true, this.bearerToken);
+        return new Promise(function(resolve, reject) {
+            request(url, function (error, response, body) {
+                console.log('error:', error); // Print the error if one occurred
+                console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+                console.log('body:', body);  
+
+                resolve(parseYelpRequest(body));
+                
+            }).auth(null, null, true, this.bearerToken);
+        });
+        
     }
 
     parseYelpRequest(body) {
         var data = body.businesses[0];
 
-    }
-
-    selectDateLocation(location) {
-        
-        var data = this.commonParameters;
-        data.categories = 'restaurants';
-        setLocationParameters(data, location);
-        const url = buildUrl(data)
-
-        var details = sendYelpRequest(url);
-        return details;
     }
 
     checkBearerToken() {

@@ -24,15 +24,13 @@ Then the API spits out a standard JSON response like so:
     location: xxxx,
     details: {
         {
-            detail_type: xxxx,
             address: xxxx,
             name: xxxx,
-            source: Yelp or whatever,
+            source: Yelp,
             site_link: xxxx,
             image_link: xxxx,
             lat: xxxx,
             lon: xxxx,
-            time: xxxx,
         }
     }
 }
@@ -56,7 +54,7 @@ I need to find something for movies. Maybe I can partner with Fandango if I can 
 
 ## Callback hell
 
-Defeated for now, but must develop a way to go beyond Yelp. Maybe set a switch inside the 
+Defeated for now, but must develop a way to go beyond Yelp. Maybe set a switch inside the SendRequest function
 
 
 

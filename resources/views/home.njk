@@ -1,5 +1,34 @@
 {% extends 'master' %}
 
 {% block content %}
-  <h2> Blog posts will be listed here </h2>
+  <div class="container" id="date">
+    <div class="row" v-if="selectDate">
+      <div class="col-md-12">
+        <h2>Welcome to DateNite!</h2>
+        <p>Are you bored with your usual routine?</p>
+        <p>Have you ever been told that you need to be more spontaneous?</p>
+        <p>Is it getting late on Friday and you need to pretend you already thought of something on your own?</p>
+
+        <h2>DateNite Is Here For You</h2>
+        <p>Set your location and select one of the options below and DateNite will find you a randomly selected suggestion in your area:</p>
+      </div>
+    </div>
+
+    <div class="row" v-if="spinner">
+      <div class="col-md-12">
+
+      </div>
+    <div>
+
+    <div class="row">
+      <div class="col-md-12">
+
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block js %}
+  <script href="/js/app.js"></script>
 {% endblock %}

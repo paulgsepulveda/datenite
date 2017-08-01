@@ -17,9 +17,8 @@
 
 const Route = use('Route')
 
-Route.get('/').render('home')
+Route.get('/', 'DateController.index')
 Route.get('/about').render('about')
-Route.get('/date', 'DateController.index')
-Route.post('/api', 'DateCOntroller.api')
+Route.post('/api', 'DateController.api')
 
 

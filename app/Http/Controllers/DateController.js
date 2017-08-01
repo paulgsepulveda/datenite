@@ -8,7 +8,6 @@ class DateController {
 
     constructor() {
         this.yelpBusinessBase = 'https://api.yelp.com/v3/businesses/search?';
-        this.eventfulSearchBase = 'http://api.eventful.com/json/events/search?';
         this.dateOptions = [
             'resturants', 
             'active', 
@@ -17,11 +16,11 @@ class DateController {
         ];
         this.commonParameters = {
             radius: 25000,
-            limit: 1
+            limit: 100
         }
         this.bearerToken = this.checkBearerToken();
         if(this.bearerToken == false) {
-            this.bearerToken = fetchBearerToken();
+            this.bearerToken = this.fetchBearerToken();
         }
     }
 
@@ -35,7 +34,7 @@ class DateController {
         var date = {};
 
         // Validate location
-        const location = validateLocation(data)
+        const location = this.validateLocation(data)
         if (!location) {
             response.json({message: "Invalid location data"})
         }
@@ -53,11 +52,11 @@ class DateController {
         }
 
         var params = this.commonParameters;
-        params.categories = 'restaurants';
-        setLocationParameters(params, location);
-        const url = buildUrl(params);
+        params.categories = data.date_type;
+        this.setLocationParameters(params, location);
+        const url = this.buildUrl(params);
 
-        sendYelpRequest(url)
+        this.sendYelpRequest(url)
             .then(function(result){
                 date.details = result
                 response.json(date) 
@@ -65,7 +64,6 @@ class DateController {
     }
 
     surpriseMe() {
-
         var temp;
         var table = [];
 
@@ -108,12 +106,12 @@ class DateController {
     sendYelpRequest(url) {
 
         return new Promise(function(resolve, reject) {
-            request(url, function (error, response, body) {
+            requestClient(url, function (error, response, body) {
                 console.log('error:', error); // Print the error if one occurred
                 console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
                 console.log('body:', body);  
 
-                resolve(parseYelpRequest(body));
+                resolve(this.parseYelpRequest(body));
                 
             }).auth(null, null, true, this.bearerToken);
         });
@@ -121,8 +119,30 @@ class DateController {
     }
 
     parseYelpRequest(body) {
-        var data = body.businesses[0];
+        var businessList = body.businesses;
+        var temp;
+        var table = [];
 
+        for (i = 0; i < this.businessList.length; i++) {
+            // In the future, an "if" could be used here to filter out undesirable options by rating
+            temp = {"weight": 1, "id": i};
+            table.push(temp);
+        }
+
+        var selectorIndex = rwc(table);
+        var selectedBusiness = businessList[selectorIndex];
+        var dateInfo = {
+            address: selectedBusiness.location.address1,
+            name: selectedBusiness.name,
+            source: 'Yelp',
+            site_link: selectedBusiness.url,
+            image_link: selectedBusiness.image_url,
+            lat: selectedBusiness.coordinates.latitude,
+            lon: selectedBusiness.coordinates.longitude,
+            rating: selectedBusiness.rating,
+            reviews: selectedBusiness.review_count
+        }
+        return dateinfo;
     }
 
     checkBearerToken() {
@@ -142,7 +162,7 @@ class DateController {
 
         const currentDate = Date.now()
         const url = 'https://api.yelp.com/oauth2/token'
-        request(
+        requestClient(
             {
                 uri: url,
                 method: "POST",
@@ -153,14 +173,14 @@ class DateController {
                     client_secret: Env.get('YELP_SECRET')
                 }
             }, function (error, response, body) {
-            console.log('error:', error); // Print the error if one occurred
-            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            console.log('body:', body); 
+                console.log('error:', error); // Print the error if one occurred
+                console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+                console.log('body:', body); 
 
-            Env.set('YELP_EXPIRATION', currentDate)
-            Env.set('YELP_TOKEN', body.access_token)
-            return true
-        });
+                Env.set('YELP_EXPIRATION', currentDate)
+                Env.set('YELP_TOKEN', body.access_token)
+                return true
+            });
     }
 }
 

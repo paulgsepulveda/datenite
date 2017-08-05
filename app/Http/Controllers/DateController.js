@@ -1,8 +1,8 @@
 'use strict'
 
-const rwc = require('random-weighted-choice')
+const rwc = require('random-weighted-choice');
 const requestClient = require('request');
-const Env = use('Env')
+const Env = use('Env');
 
 class DateController {
 
@@ -16,16 +16,18 @@ class DateController {
         ];
         this.commonParameters = {
             radius: 25000,
-            limit: 100
+            limit: 50
         }
         this.bearerToken = this.checkBearerToken();
+        console.log('check bearer token: ' + this.bearerToken)
         if(this.bearerToken == false) {
             this.bearerToken = this.fetchBearerToken();
+            console.log('fetched bearer token: ' + this.bearerToken)
         }
     }
 
     * index (request, response) {
-        yield response.sendView('date')
+        yield response.sendView('home')
     }
 
     * api (request, response) {
@@ -40,15 +42,14 @@ class DateController {
         }
 
         // Account for surprise request
-        if(date_type == 'surprise') {
-            date_type = this.surpriseMe();
+        if(data.date_type == 'surprise') {
+            data.date_type = this.surpriseMe();
         }
 
         // Create date object, fill general data and create 
         var date = {
             "date_type": data.date_type,
-            "location": location,
-            "details": details
+            "location": location
         }
 
         var params = this.commonParameters;
@@ -56,7 +57,7 @@ class DateController {
         this.setLocationParameters(params, location);
         const url = this.buildUrl(params);
 
-        this.sendYelpRequest(url)
+        this.sendYelpRequest(url, this.bearerToken, this.parseYelpRequest)
             .then(function(result){
                 date.details = result
                 response.json(date) 
@@ -103,27 +104,34 @@ class DateController {
         }
     }
 
-    sendYelpRequest(url) {
+    sendYelpRequest(url, bearerToken, parseFunction) {
 
         return new Promise(function(resolve, reject) {
-            requestClient(url, function (error, response, body) {
+            requestClient({
+                "url": url,
+                'auth': {
+                    'bearer': bearerToken
+                }
+            }, function (error, response, body) {
                 console.log('error:', error); // Print the error if one occurred
                 console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-                console.log('body:', body);  
+                //console.log('body:', body);  
 
-                resolve(this.parseYelpRequest(body));
+                resolve(parseFunction(body));
                 
-            }).auth(null, null, true, this.bearerToken);
+            });
         });
         
     }
 
     parseYelpRequest(body) {
-        var businessList = body.businesses;
+        var list = JSON.parse(body);
+        var businessList = list.businesses;
+        console.log(businessList);
         var temp;
         var table = [];
 
-        for (i = 0; i < this.businessList.length; i++) {
+        for (var i = 0; i < businessList.length; i++) {
             // In the future, an "if" could be used here to filter out undesirable options by rating
             temp = {"weight": 1, "id": i};
             table.push(temp);
@@ -131,6 +139,7 @@ class DateController {
 
         var selectorIndex = rwc(table);
         var selectedBusiness = businessList[selectorIndex];
+        console.log("selected business= " + selectedBusiness.name);
         var dateInfo = {
             address: selectedBusiness.location.address1,
             name: selectedBusiness.name,
@@ -142,36 +151,42 @@ class DateController {
             rating: selectedBusiness.rating,
             reviews: selectedBusiness.review_count
         }
-        return dateinfo;
+        return dateInfo;
     }
 
     checkBearerToken() {
         
-        const expiration = Env.get('YELP_EXPIRATION')
-        const currentTime = Date.now()
+        const expiration = Env.get('YELP_EXPIRATION', false);
+        const currentTime = Date.now();
 
-        if(currentTime - expiration < 15552000000) {
-            return Env.get('YELP_TOKEN')
+        if(expiration) {
+            if(currentTime - expiration < 15552000000) {
+                return Env.get('YELP_TOKEN')
+            } else {
+                return false
+            }
         } else {
             return false
         }
-
     }
 
     fetchBearerToken() {
 
-        const currentDate = Date.now()
-        const url = 'https://api.yelp.com/oauth2/token'
+        const currentDate = Date.now();
+        console.log('date: ' + currentDate);
+        const url = 'https://api.yelp.com/oauth2/token';
+        const postData = {
+                    grant_type: "client_credentials",
+                    client_id: Env.get('YELP_ID'),
+                    client_secret: Env.get('YELP_SECRET')
+                };
+        console.log(postData);
         requestClient(
             {
                 uri: url,
                 method: "POST",
-                body:
-                {
-                    grant_type: "client_credentials",
-                    client_id: Env.get('YELP_ID'),
-                    client_secret: Env.get('YELP_SECRET')
-                }
+                form: postData,
+                json: true
             }, function (error, response, body) {
                 console.log('error:', error); // Print the error if one occurred
                 console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
@@ -179,6 +194,7 @@ class DateController {
 
                 Env.set('YELP_EXPIRATION', currentDate)
                 Env.set('YELP_TOKEN', body.access_token)
+                console.log('Access token: ' + Env.get('YELP_TOKEN'))
                 return true
             });
     }

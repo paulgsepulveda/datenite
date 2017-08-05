@@ -3,28 +3,33 @@ var app = new Vue({
   data: {
     selectDate: true,
     spinner: false,
-    results: false
+    results: false,
+    date: ''
   },
   methods: {
-    sendRequest: function () {
+    sendRequest: function (dateType, csrf) {
       this.selectDate = false;
-      this.results = false;
       this.spinner = true;
-      $.ajax({
-        type: "post",
-        url: "/api",
-        data: {
-          latitude: null,
-          longitude: null,
-          date: Date().toISOString(),
-          zip: this.location,
-          date_type: this.date_type
-        },
-        dataType: "dataType",
-        success: function (response) {
-          this.date = response;
-          this.spinner = false;
-        }
+      var currentDate = new Date;
+      currentDate = currentDate.toISOString();
+      console.log('loltest');
+      var that = this;
+      axios.post('/api', {
+        latitude: null,
+        longitude: null,
+        date: currentDate,
+        zip: '32814',
+        date_type: dateType,
+        _csrf: csrf
+      })
+      .then(function (response) {
+        that.date = response.data;
+        console.log(that.date);
+        that.spinner = false;
+        that.results = true;
+      })
+      .catch(function (error) {
+        console.log(error);
       });
     }
   }

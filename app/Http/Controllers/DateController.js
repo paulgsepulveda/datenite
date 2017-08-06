@@ -127,7 +127,6 @@ class DateController {
     parseYelpRequest(body) {
         var list = JSON.parse(body);
         var businessList = list.businesses;
-        console.log(businessList);
         var temp;
         var table = [];
 

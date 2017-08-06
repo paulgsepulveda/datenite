@@ -4,7 +4,10 @@ var app = new Vue({
     selectDate: true,
     spinner: false,
     results: false,
-    date: ''
+    date_type: '',
+    name: '',
+    address: '',
+    source: ''
   },
   methods: {
     sendRequest: function (dateType, csrf) {
@@ -12,7 +15,6 @@ var app = new Vue({
       this.spinner = true;
       var currentDate = new Date;
       currentDate = currentDate.toISOString();
-      console.log('loltest');
       var that = this;
       axios.post('/api', {
         latitude: null,
@@ -23,8 +25,13 @@ var app = new Vue({
         _csrf: csrf
       })
       .then(function (response) {
-        that.date = response.data;
-        console.log(that.date);
+        that.date_type = response.data.date_type;
+        that.name = response.data.details.name;
+        that.address = response.data.details.address;
+        that.rating = response.data.details.rating;
+        that.reviews = response.data.details.reviews;
+        // Property below will be used later to identify the tag to enter
+        that.source = response.data.details.source;
         that.spinner = false;
         that.results = true;
       })

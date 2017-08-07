@@ -43,7 +43,7 @@ class DateController {
 
         // Account for surprise request
         if(data.date_type == 'surprise') {
-            data.date_type = this.surpriseMe();
+            data.date_type = this.surpriseMe(this.dateOptions);
         }
 
         // Create date object, fill general data and create 
@@ -68,8 +68,8 @@ class DateController {
         var temp;
         var table = [];
 
-        for (i = 0; i < this.dateOptions.length; i++) {
-            temp = {weight: 1, id: dateOptions[i]};
+        for (var i = 0; i < this.dateOptions.length; i++) {
+            temp = {weight: 1, id: this.dateOptions[i]};
             table.push(temp);
         }
 
@@ -78,6 +78,7 @@ class DateController {
     }
 
     validateLocation(data) {
+    
         if(data.zip.length == 5) {
             return {type: 'zip', zip: data.zip}
         } else if (data.latitude.length > 1) {

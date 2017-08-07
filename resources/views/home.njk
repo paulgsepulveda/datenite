@@ -30,20 +30,26 @@
             <div class="form-group">
               <div class="row">
               <div class="col-md-3">
-                <label class="control-label" for="zip">Zip Code: </label>
-                <input class="form-control" name="zip" size="5"  maxlength="5" type="text" model="location">
+                <label class="control-label">Zip Code: {% raw %} {{ userZip }} {% endraw %}</label>
+                <input class="form-control" size="5"  maxlength="5" type="text" v-model="userZip">
               </div>
               </div>
             </div>
             </p>
-            <p><a href="#" v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-info">Dinner</a></p>
+            <p>
+              <a v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-info">Dinner</a>
+              <a v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-info">Active / Outdoors</a>
+              <a v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-info">Arts / Music</a>
+              <a v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-info">Nightlife</a>
+              <a v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-info">Surprise Me</a>
+            </p>
           </div>
         </div>
       </div>
     </div>
 
     <div class="row" v-show="spinner">
-      <div class="col-md-12">
+      <div class="col-md-12 text-center">
         <p>Reticulating Splines...</p>
         <i class="fa fa-refresh fa-spin fa-3x fa-fw"></i>
         <span class="sr-only">Loading...</span>
@@ -57,24 +63,24 @@
             <h3 class="panel-title">Enjoy Your Date</h3>
           </div>
           <div class="panel-body">
-            <table class="table table-hover">
-              <thead>
-                <th>Location</th>
-                <th>Type</th>
-                <th>Address</th>
-                <th>Source</th>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{% raw %} {{ name }} {% endraw %}</td>
-                  <td>{% raw %} {{ date_type }} {% endraw %}</td>
-                  <td>{% raw %} {{ address }} {% endraw %}</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-            <p>Not really feeling it? Click below to re-roll. Don't abuse it though - it kinda goes against the whole spirit of spontaneity and adventure, y'know?</p>
-            <p><a href="#" v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-info">Dinner</a></p>
+            <h4>Location: </h4> <a :href="site_link"> {% raw %} {{ name }} {% endraw %}</a>
+            <hr>
+            <h4>Category: </h4> {% raw %} {{ date_type }} {% endraw %}
+            <hr>
+            <h4>Address: </h4> {% raw %} {{ address }} {% endraw %}
+            <hr>
+            <h4>Source: </h4> 
+              <a :href="site_link"> <img class="img-responsive" width="100" height="64" src="/yelp/Yelp_trademark_RGB.png"></a>
+              <img class="img-responsive" :src="rating">Reviews: {% raw %} {{ reviews }} {% endraw %}
+            <hr>
+            <h4>Not really feeling it?</h4> <p>Click below to re-roll. Don't abuse it though - it kinda goes against the whole spirit of spontaneity and adventure, y'know?</p>
+            <p>
+              <a v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-primary">Dinner</a>
+              <a v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-primary">Active / Outdoors</a>
+              <a v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-primary">Arts / Music</a>
+              <a v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-primary">Nightlife</a>
+              <a v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-primary">Surprise Me</a>
+            </p>
           </div>
         </div>
       </div>

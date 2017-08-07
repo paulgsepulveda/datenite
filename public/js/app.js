@@ -4,10 +4,14 @@ var app = new Vue({
     selectDate: true,
     spinner: false,
     results: false,
+    userZip: '',
     date_type: '',
     name: '',
     address: '',
-    source: ''
+    source: '',
+    rating: '',
+    reviews: '',
+    site_link: ''
   },
   methods: {
     sendRequest: function (dateType, csrf) {
@@ -20,7 +24,7 @@ var app = new Vue({
         latitude: null,
         longitude: null,
         date: currentDate,
-        zip: '32814',
+        zip: this.userZip,
         date_type: dateType,
         _csrf: csrf
       })
@@ -28,8 +32,9 @@ var app = new Vue({
         that.date_type = response.data.date_type;
         that.name = response.data.details.name;
         that.address = response.data.details.address;
-        that.rating = response.data.details.rating;
+        that.rating = '/yelp/regular_' + response.data.details.rating + '.png';
         that.reviews = response.data.details.reviews;
+        that.site_link = response.data.details.site_link;
         // Property below will be used later to identify the tag to enter
         that.source = response.data.details.source;
         that.spinner = false;

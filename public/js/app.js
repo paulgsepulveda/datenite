@@ -6,16 +6,12 @@ var app = new Vue({
     results: false,
     userZip: '',
     date_type: '',
-    name: '',
-    address: '',
-    source: '',
-    rating: '',
-    reviews: '',
-    site_link: ''
+    dates: {}
   },
   methods: {
     sendRequest: function (dateType, csrf) {
       this.selectDate = false;
+      this.results = false;
       this.spinner = true;
       var currentDate = new Date;
       currentDate = currentDate.toISOString();
@@ -29,14 +25,7 @@ var app = new Vue({
         _csrf: csrf
       })
       .then(function (response) {
-        that.date_type = response.data.date_type;
-        that.name = response.data.details.name;
-        that.address = response.data.details.address;
-        that.rating = '/yelp/regular_' + response.data.details.rating + '.png';
-        that.reviews = response.data.details.reviews;
-        that.site_link = response.data.details.site_link;
-        // Property below will be used later to identify the tag to enter
-        that.source = response.data.details.source;
+        that.dates= response.data;
         that.spinner = false;
         that.results = true;
       })

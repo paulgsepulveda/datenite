@@ -2,13 +2,16 @@
 
 {% block content %}
   <div class="container" id="date">
+
+    {# Pitch + Find form #}
     <div class="row" v-show="selectDate">
       <div class="col-md-12">
-        <div class="panel panel-success">
-          <div class="panel-heading">
-            <h3 class="panel-title">Welcome to DateNite!</h3>
-          </div>
-          <div class="panel-body">
+
+        {# Header pitch card #}
+        <div class="card">
+          <div class="card-body">
+            <h3>Welcome to DateNite!</h3>
+            <hr>
             <ul>
               <li>Are you bored with your usual routine?</li>
               <li>Have you ever been told that you need to be more spontaneous?</li>
@@ -20,11 +23,11 @@
           </div>
         </div>
         
-        <div class="panel panel-info">
-          <div class="panel-heading">
-            <h3 class="panel-title">Find Your Date Now</h3>
-          </div>
-          <div class="panel-body">
+        {# Find A Date card #}
+        <div class="card">
+          <div class="card-body">
+            <h3>Find Your Date Now</h3>
+            <hr>
             <p>Set your location and select one of the options below and DateNite will find you a randomly selected suggestion in your area:</p>
             <p>
             <div class="form-group">
@@ -37,49 +40,64 @@
             </div>
             </p>
             <p>
-              <a v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-info">Dinner</a>
-              <a v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-info">Active / Outdoors</a>
-              <a v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-info">Arts / Music</a>
-              <a v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-info">Nightlife</a>
-              <a v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-info">Surprise Me</a>
+              <button v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-info">Dinner</button>
+              <button v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-info">Active / Outdoors</button>
+              <button v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-info">Arts / Music</button>
+              <button v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-info">Nightlife</button>
+              <button v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-info">Surprise Me</button>
             </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {# Loading display #}
+    <div class="row" v-show="spinner">
+      <div class="col-md-12">
+        <div class="card">  
+          <div class="card-body">
+            <p>Reticulating Splines...</p>
+            <i class="fa fa-refresh fa-spin fa-3x fa-fw"></i>
+            <span class="sr-only">Loading...</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row" v-show="spinner">
-      <div class="col-md-12 text-center">
-        <p>Reticulating Splines...</p>
-        <i class="fa fa-refresh fa-spin fa-3x fa-fw"></i>
-        <span class="sr-only">Loading...</span>
-      </div>
-    </div>
-
+    {# Date idea display #}
     <div class="row" v-show="results">
       <div class="col-md-12">
-        <div class="panel panel-primary">
-          <div class="panel-heading">
-            <h3 class="panel-title">Enjoy Your Date</h3>
+        <h4 class="mb-3 t-3">Check out these date ideas:</h4>
+      </div>
+
+      <div v-for="date in dates" class="col-md-4 col-sm-12">
+        <div class="card mb-3 mt-3">
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Location:</strong> <a :href="site_link"> {% raw %} {{ date.name }} {% endraw %}</a></li>
+              <li class="list-group-item"><strong>Category:</strong> <span class="text-uppercase">{% raw %} {{ date.date_type }} {% endraw %}</span></li>
+              <li class="list-group-item"><strong>Address:</strong> {% raw %} {{ date.address }} {% endraw %}</li>
+              <li class="list-group-item">
+                <strong>Source:</strong> <a :href="date.site_link"> <img class="img-responsive" width="100" height="64" src="/yelp/Yelp_trademark_RGB.png"></a>
+                <img class="img-responsive" :src="'/yelp/regular_' + date.rating + '.png'">Reviews: {% raw %} {{ date.reviews }} {% endraw %}
+              </li>
+            </ul>
           </div>
-          <div class="panel-body">
-            <h4>Location: </h4> <a :href="site_link"> {% raw %} {{ name }} {% endraw %}</a>
-            <hr>
-            <h4>Category: </h4> {% raw %} {{ date_type }} {% endraw %}
-            <hr>
-            <h4>Address: </h4> {% raw %} {{ address }} {% endraw %}
-            <hr>
-            <h4>Source: </h4> 
-              <a :href="site_link"> <img class="img-responsive" width="100" height="64" src="/yelp/Yelp_trademark_RGB.png"></a>
-              <img class="img-responsive" :src="rating">Reviews: {% raw %} {{ reviews }} {% endraw %}
-            <hr>
+        </div>
+      </div>
+
+
+      <div class="col-md-12">
+        <div class="card mb-3 mt-3">
+          <div class="card-body">
             <h4>Not really feeling it?</h4> <p>Click below to re-roll. Don't abuse it though - it kinda goes against the whole spirit of spontaneity and adventure, y'know?</p>
             <p>
-              <a v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-primary">Dinner</a>
-              <a v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-primary">Active / Outdoors</a>
-              <a v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-primary">Arts / Music</a>
-              <a v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-primary">Nightlife</a>
-              <a v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-primary">Surprise Me</a>
+              <button v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-primary">Dinner</button>
+              <button v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-primary">Active / Outdoors</button>
+              <button v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-primary">Arts / Music</button>
+              <button v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-primary">Nightlife</button>
+              <button v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-primary">Surprise Me</button>
             </p>
           </div>
         </div>

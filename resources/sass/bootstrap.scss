@@ -1,0 +1,75 @@
+/*!
+ * Bootstrap v4.0.0-beta (https://getbootstrap.com)
+ * Copyright 2011-2017 The Bootstrap Authors
+ * Copyright 2011-2017 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ */
+
+@import "functions";
+@import "variables";
+@import "mixins";
+@import "print";
+@import "reboot";
+@import "type";
+@import "images";
+@import "code";
+@import "grid";
+@import "tables";
+@import "forms";
+@import "buttons";
+@import "transitions";
+@import "dropdown";
+@import "button-group";
+@import "input-group";
+@import "custom-forms";
+@import "nav";
+@import "navbar";
+@import "card";
+@import "breadcrumb";
+@import "pagination";
+@import "badge";
+@import "jumbotron";
+@import "alert";
+@import "progress";
+@import "media";
+@import "list-group";
+@import "close";
+@import "modal";
+@import "tooltip";
+@import "popover";
+@import "carousel";
+@import "utilities";
+
+//$enable-gradients: true;
+
+section {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+// Box shadow helper
+@mixin BoxShadowHelper($level: 1){
+    @if $level == 1 {
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .16), 0 2px 10px 0 rgba(0, 0, 0, .12);
+    }
+    @if $level == 2 {
+      box-shadow: 0 5px 11px 0 rgba(0, 0, 0, .18), 0 4px 15px 0 rgba(0, 0, 0, .15);
+    }
+  }
+
+.card {
+    @include BoxShadowHelper(1);
+
+    overflow: hidden;
+    transition: .25s box-shadow;
+
+    &:focus,
+    &:hover {
+        @include BoxShadowHelper(2);
+    }
+}
+
+.card-inverse .card-img-overlay {
+    background-color: rgba(#333,.85);
+    border-color: rgba(#333,.85);
+}

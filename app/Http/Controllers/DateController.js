@@ -9,7 +9,7 @@ class DateController {
     constructor() {
         this.yelpBusinessBase = 'https://api.yelp.com/v3/businesses/search?';
         this.dateOptions = [
-            'resturants', 
+            'restaurants', 
             'active', 
             'arts',
             'nightlife'
@@ -26,10 +26,20 @@ class DateController {
         }
     }
 
+    /**
+     * Displays the app homepage.
+     * @param {*} request 
+     * @param {*} response 
+     */
     * index (request, response) {
         yield response.sendView('home')
     }
 
+    /**
+     * Reads the POST request, responds with a JSON object with six date ideas
+     * @param {*} request 
+     * @param {*} response 
+     */
     * api (request, response) {
 
         const data = request.all();
@@ -64,6 +74,9 @@ class DateController {
             });
     }
 
+    /**
+     * Generates a random Date Option type from the this.dateOptions array
+     */
     surpriseMe() {
         var temp;
         var table = [];
@@ -77,6 +90,10 @@ class DateController {
         return surprise
     }
 
+    /**
+     * Determine if the location format is ZIP / GEO / NA
+     * @param {*} data 
+     */
     validateLocation(data) {
     
         if(data.zip.length == 5) {
@@ -88,14 +105,21 @@ class DateController {
         }
     }
 
- 
-
+    /**
+     * Build the URL for the Yelp v3 API
+     * @param {*} data 
+     */
     buildUrl(data) {
         let urlParameters = Object.keys(data).map((i) => i+'='+data[i]).join('&');
         const url = this.yelpBusinessBase + urlParameters
         return url
     }
 
+    /**
+     * Sets the correct location property(s) to the data object that will be used to construct the API request URL
+     * @param {*} data 
+     * @param {*} location 
+     */
     setLocationParameters(data, location) {
         if(location.type == 'zip') {
             data.location = location.zip 
@@ -105,6 +129,12 @@ class DateController {
         }
     }
 
+    /**
+     * 
+     * @param {*} url 
+     * @param {*} bearerToken 
+     * @param {*} parseFunction 
+     */
     sendYelpRequest(url, bearerToken, parseFunction) {
 
         return new Promise(function(resolve, reject) {
@@ -125,11 +155,46 @@ class DateController {
         
     }
 
+    /**
+     * 
+     * @param {*} table 
+     * @param {*} usedSelectors 
+     */
+    getUnusedSelector(table, usedSelectors) {
+        var selectorIndex = rwc(table);
+        if( usedSelectors.indexOf(selectorIndex) > -1) {
+            usedSelectors.push(selectorIndex);
+            return selectorIndex;
+        } else {
+            selectorIndex = rwc(table);
+            if( usedSelectors.indexOf(selectorIndex) > -1) {
+                usedSelectors.push(selectorIndex);
+                return selectorIndex;
+            } else {
+                selectorIndex = rwc(table);
+                if( usedSelectors.indexOf(selectorIndex) > -1) {
+                    usedSelectors.push(selectorIndex);
+                    return selectorIndex;
+                } else {
+                    selectorIndex = rwc(table);
+                    usedSelectors.push(selectorIndex);
+                    return selectorIndex;
+                }
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param {*} body 
+     */
     parseYelpRequest(body) {
         var list = JSON.parse(body);
         var businessList = list.businesses;
         var temp;
         var table = [];
+        var usedSelectors = [];
+        var dateInfo = {};
 
         for (var i = 0; i < businessList.length; i++) {
             // In the future, an "if" could be used here to filter out undesirable options by rating
@@ -137,23 +202,33 @@ class DateController {
             table.push(temp);
         }
 
-        var selectorIndex = rwc(table);
-        var selectedBusiness = businessList[selectorIndex];
-        console.log("selected business= " + selectedBusiness.name);
-        var dateInfo = {
-            address: selectedBusiness.location.address1,
-            name: selectedBusiness.name,
-            source: 'Yelp',
-            site_link: selectedBusiness.url,
-            image_link: selectedBusiness.image_url,
-            lat: selectedBusiness.coordinates.latitude,
-            lon: selectedBusiness.coordinates.longitude,
-            rating: selectedBusiness.rating,
-            reviews: selectedBusiness.review_count
+        // iterate through six times for six unique outcomes
+
+        var selectorIndex = getUnusedSelector(table, usedSelectors)
+
+        for(var i= 0; i < 6; i++) {
+            var selectedBusiness = businessList[selectorIndex];
+            console.log("selected business= " + selectedBusiness.name);
+            var tempDate = {
+                address: selectedBusiness.location.address1,
+                name: selectedBusiness.name,
+                source: 'Yelp',
+                site_link: selectedBusiness.url,
+                image_link: selectedBusiness.image_url,
+                lat: selectedBusiness.coordinates.latitude,
+                lon: selectedBusiness.coordinates.longitude,
+                rating: selectedBusiness.rating,
+                reviews: selectedBusiness.review_count
+            }
+            dateInfo.push(tempDate);
         }
+        
         return dateInfo;
     }
 
+    /**
+     * 
+     */
     checkBearerToken() {
         
         const expiration = Env.get('YELP_EXPIRATION', false);
@@ -170,6 +245,9 @@ class DateController {
         }
     }
 
+    /**
+     * Fetch the auth token for 
+     */
     fetchBearerToken() {
 
         const currentDate = Date.now();

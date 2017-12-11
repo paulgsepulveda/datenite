@@ -56,11 +56,12 @@ class DateController {
             data.date_type = this.surpriseMe(this.dateOptions);
         }
 
-        // Create date object, fill general data and create 
-        var date = {
-            "date_type": data.date_type,
-            "location": location
-        }
+        // PENDING REMOVAL
+        // // Create date object, fill general data and create 
+        // var date = {
+        //     "date_type": data.date_type,
+        //     "location": location
+        // }
 
         var params = this.commonParameters;
         params.categories = data.date_type;
@@ -69,8 +70,7 @@ class DateController {
 
         this.sendYelpRequest(url, this.bearerToken, this.parseYelpRequest)
             .then(function(result){
-                date.details = result
-                response.json(date) 
+                response.json(result) 
             });
     }
 
@@ -138,6 +138,8 @@ class DateController {
     sendYelpRequest(url, bearerToken, parseFunction) {
 
         return new Promise(function(resolve, reject) {
+            console.log(url);
+            console.log(bearerToken)
             requestClient({
                 "url": url,
                 'auth': {
@@ -146,7 +148,7 @@ class DateController {
             }, function (error, response, body) {
                 console.log('error:', error); // Print the error if one occurred
                 console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-                //console.log('body:', body);  
+                console.log('body:', body);  
 
                 resolve(parseFunction(body));
                 
@@ -202,26 +204,29 @@ class DateController {
             table.push(temp);
         }
 
-        // iterate through six times for six unique outcomes
+        // Get six random IDs
 
-        var selectorIndex = getUnusedSelector(table, usedSelectors)
-
-        for(var i= 0; i < 6; i++) {
-            var selectedBusiness = businessList[selectorIndex];
-            console.log("selected business= " + selectedBusiness.name);
-            var tempDate = {
-                address: selectedBusiness.location.address1,
-                name: selectedBusiness.name,
-                source: 'Yelp',
-                site_link: selectedBusiness.url,
-                image_link: selectedBusiness.image_url,
-                lat: selectedBusiness.coordinates.latitude,
-                lon: selectedBusiness.coordinates.longitude,
-                rating: selectedBusiness.rating,
-                reviews: selectedBusiness.review_count
-            }
-            dateInfo.push(tempDate);
-        }
+        console.log(table);
+        var selectorIndex = this.getUnusedSelector(table, usedSelectors);
+        console.log(selectorIndex);
+        //iterate through six times for six unique outcomes
+        // for (var i= 0; i < 6; i++) {
+        //     var selectorIndex = this.getUnusedSelector(table, usedSelectors);
+        //     var selectedBusiness = businessList[selectorIndex];
+        //     console.log("selected business= " + selectedBusiness.name);
+        //     var tempDate = {
+        //         address: selectedBusiness.location.address1,
+        //         name: selectedBusiness.name,
+        //         source: 'Yelp',
+        //         site_link: selectedBusiness.url,
+        //         image_link: selectedBusiness.image_url,
+        //         lat: selectedBusiness.coordinates.latitude,
+        //         lon: selectedBusiness.coordinates.longitude,
+        //         rating: selectedBusiness.rating,
+        //         reviews: selectedBusiness.review_count
+        //     }
+        //     dateInfo.push(tempDate);
+        // }
         
         return dateInfo;
     }
@@ -230,7 +235,8 @@ class DateController {
      * 
      */
     checkBearerToken() {
-        
+    
+        const Env = use('Env');
         const expiration = Env.get('YELP_EXPIRATION', false);
         const currentTime = Date.now();
 
@@ -246,10 +252,11 @@ class DateController {
     }
 
     /**
-     * Fetch the auth token for 
+     * Fetch the auth token for
      */
     fetchBearerToken() {
 
+        const Env = use('Env');
         const currentDate = Date.now();
         console.log('date: ' + currentDate);
         const url = 'https://api.yelp.com/oauth2/token';
@@ -268,7 +275,7 @@ class DateController {
             }, function (error, response, body) {
                 console.log('error:', error); // Print the error if one occurred
                 console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-                console.log('body:', body); 
+                console.log('body:', body);
 
                 Env.set('YELP_EXPIRATION', currentDate)
                 Env.set('YELP_TOKEN', body.access_token)

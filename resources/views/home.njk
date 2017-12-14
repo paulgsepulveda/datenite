@@ -8,7 +8,7 @@
       <div class="col-md-12">
 
         {# Header pitch card #}
-        <div class="card">
+        <div class="card mb-3 mt-3">
           <div class="card-body">
             <h3>Welcome to DateNite!</h3>
             <hr>
@@ -24,7 +24,7 @@
         </div>
         
         {# Find A Date card #}
-        <div class="card">
+        <div class="card mb-3 mt-3">
           <div class="card-body">
             <h3>Find Your Date Now</h3>
             <hr>
@@ -40,11 +40,11 @@
             </div>
             </p>
             <p>
-              <button v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-info">Dinner</button>
-              <button v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-info">Active / Outdoors</button>
-              <button v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-info">Arts / Music</button>
-              <button v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-info">Nightlife</button>
-              <button v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-info">Surprise Me</button>
+              <button :disabled="isValidated" v-on:click="sendRequest('restaurants', '{{ csrfToken }}' )" class="btn btn-info">Dinner</button>
+              <button :disabled="isValidated" v-on:click="sendRequest('active', '{{ csrfToken }}' )" class="btn btn-info">Active / Outdoors</button>
+              <button :disabled="isValidated" v-on:click="sendRequest('arts', '{{ csrfToken }}' )" class="btn btn-info">Arts / Music</button>
+              <button :disabled="isValidated" v-on:click="sendRequest('nightlife', '{{ csrfToken }}' )" class="btn btn-info">Nightlife</button>
+              <button :disabled="isValidated" v-on:click="sendRequest('surprise', '{{ csrfToken }}' )" class="btn btn-info">Surprise Me</button>
             </p>
           </div>
         </div>
@@ -55,7 +55,7 @@
     {# Loading display #}
     <div class="row" v-show="spinner">
       <div class="col-md-12">
-        <div class="card">  
+        <div class="card mb-3 mt-3">  
           <div class="card-body">
             <p>Reticulating Splines...</p>
             <i class="fa fa-refresh fa-spin fa-3x fa-fw"></i>
@@ -71,11 +71,11 @@
         <h4 class="mb-3 t-3">Check out these date ideas:</h4>
       </div>
 
-      <div v-for="date in dates" class="col-md-4 col-sm-12">
+      <div v-for="date in dates" class="col-lg-4 col-md-6 col-sm-12">
         <div class="card mb-3 mt-3">
           <div class="card-body">
             <ul class="list-group list-group-flush">
-              <li class="list-group-item"><strong>Location:</strong> <a :href="site_link"> {% raw %} {{ date.name }} {% endraw %}</a></li>
+              <li class="list-group-item"><strong>Location:</strong> <a :href="date.site_link"> {% raw %} {{ date.name }} {% endraw %}</a></li>
               <li class="list-group-item"><strong>Category:</strong> <span class="text-uppercase">{% raw %} {{ date_type }} {% endraw %}</span></li>
               <li class="list-group-item"><strong>Address:</strong> {% raw %} {{ date.address }} {% endraw %}</li>
               <li class="list-group-item">

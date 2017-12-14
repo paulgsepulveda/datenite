@@ -14,6 +14,7 @@ class DateController {
             'arts',
             'nightlife'
         ];
+        this.dateType = '';
         this.commonParameters = {
             radius: 25000,
             limit: 50
@@ -65,6 +66,7 @@ class DateController {
 
         var params = this.commonParameters;
         params.categories = data.date_type;
+        this.dateType = data.date_type;
         this.setLocationParameters(params, location);
         const url = this.buildUrl(params);
 
@@ -159,35 +161,6 @@ class DateController {
 
     /**
      * 
-     * @param {*} table 
-     * @param {*} usedSelectors 
-     */
-    getUnusedSelector(table, usedSelectors) {
-        var selectorIndex = rwc(table);
-        if( usedSelectors.indexOf(selectorIndex) > -1) {
-            usedSelectors.push(selectorIndex);
-            return selectorIndex;
-        } else {
-            selectorIndex = rwc(table);
-            if( usedSelectors.indexOf(selectorIndex) > -1) {
-                usedSelectors.push(selectorIndex);
-                return selectorIndex;
-            } else {
-                selectorIndex = rwc(table);
-                if( usedSelectors.indexOf(selectorIndex) > -1) {
-                    usedSelectors.push(selectorIndex);
-                    return selectorIndex;
-                } else {
-                    selectorIndex = rwc(table);
-                    usedSelectors.push(selectorIndex);
-                    return selectorIndex;
-                }
-            }
-        }
-    }
-
-    /**
-     * 
      * @param {*} body 
      */
     parseYelpRequest(body) {
@@ -195,8 +168,8 @@ class DateController {
         var businessList = list.businesses;
         var temp;
         var table = [];
-        var usedSelectors = [];
-        var dateInfo = {};
+        var selectors = [];
+        var dateInfo = [];
 
         for (var i = 0; i < businessList.length; i++) {
             // In the future, an "if" could be used here to filter out undesirable options by rating
@@ -205,28 +178,34 @@ class DateController {
         }
 
         // Get six random IDs
+        for(var i = 0; i < 6; i++) {
+            var s = Math.floor(Math.random() * (businessList.length - 1));
+            if(selectors.indexOf(s) > -1) {
+                s = Math.floor(Math.random() * (businessList.length - 1));
+                if(selectors.indexOf(s) > -1) {
+                    s = Math.floor(Math.random() * (businessList.length - 1));
+                }
+            }
+            selectors.push(s);
+        }
 
-        console.log(table);
-        var selectorIndex = this.getUnusedSelector(table, usedSelectors);
-        console.log(selectorIndex);
-        //iterate through six times for six unique outcomes
-        // for (var i= 0; i < 6; i++) {
-        //     var selectorIndex = this.getUnusedSelector(table, usedSelectors);
-        //     var selectedBusiness = businessList[selectorIndex];
-        //     console.log("selected business= " + selectedBusiness.name);
-        //     var tempDate = {
-        //         address: selectedBusiness.location.address1,
-        //         name: selectedBusiness.name,
-        //         source: 'Yelp',
-        //         site_link: selectedBusiness.url,
-        //         image_link: selectedBusiness.image_url,
-        //         lat: selectedBusiness.coordinates.latitude,
-        //         lon: selectedBusiness.coordinates.longitude,
-        //         rating: selectedBusiness.rating,
-        //         reviews: selectedBusiness.review_count
-        //     }
-        //     dateInfo.push(tempDate);
-        // }
+        for (var i = 0; i < selectors.length; i++) {
+            var selectorIndex = selectors[i];
+            var selectedBusiness = businessList[selectorIndex];
+            console.log("selected business= " + selectedBusiness.name);
+            var tempDate = {
+                address: selectedBusiness.location.address1,
+                name: selectedBusiness.name,
+                source: 'Yelp',
+                site_link: selectedBusiness.url,
+                image_link: selectedBusiness.image_url,
+                lat: selectedBusiness.coordinates.latitude,
+                lon: selectedBusiness.coordinates.longitude,
+                rating: selectedBusiness.rating,
+                reviews: selectedBusiness.review_count
+            }
+            dateInfo.push(tempDate);
+        }
         
         return dateInfo;
     }
